@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>脆薯 (Cuì Shǔ) | Official Unofficial Fan Page</title>
+    <!-- Import Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         /* --- Color Palette --- */
         :root {
@@ -23,7 +25,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
@@ -77,13 +79,11 @@
         /* --- CONTAINER --- */
         .container { max-width: 600px; margin: 0 auto; padding: 0 20px; }
 
-        /* --- CARDS (NO MOTION) --- */
+        /* --- CARDS --- */
         .card {
             background: var(--white); border-radius: 20px; padding: 25px; margin-bottom: 25px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center;
-            /* Removed transform and perspective styles */
         }
-        
         h2 { font-size: 1.4rem; color: var(--text-dark); margin-bottom: 15px; border-bottom: 2px solid var(--soft-bg); padding-bottom: 10px; display: inline-block; }
 
         /* --- LIVE STATUS WIDGET --- */
@@ -94,9 +94,7 @@
         }
         .status-offline { background-color: #EEE; color: #777; border: 2px solid #CCC; }
         .status-live { background-color: var(--live-red); color: white; border: 2px solid #D50000; animation: pulse 1.5s infinite; }
-        
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 23, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0); } }
-
         .time-display { font-family: monospace; font-size: 1.2rem; color: var(--crispy-orange); font-weight: bold; margin-top: 5px; }
 
         /* --- STAR GUARDIAN --- */
@@ -117,7 +115,6 @@
         }
         .guardian-item:hover { transform: scale(1.02); background-color: rgba(255, 255, 255, 0.25); }
         .rank-num { font-weight: 900; font-size: 1.2rem; width: 40px; text-align: center; margin-right: 15px; font-style: italic; }
-        
         .top-1 { background: linear-gradient(90deg, rgba(255, 215, 0, 0.3), rgba(255, 255, 255, 0.1)); border: 2px solid var(--gold); }
         .top-1 .rank-num { color: #FFD700; }
         .top-2 { border: 2px solid var(--silver); } .top-2 .rank-num { color: #E0E0E0; }
@@ -140,6 +137,12 @@
         .id-label { font-size: 0.8rem; color: #aaa; display: block; margin-bottom: 5px; font-family: sans-serif; }
 
         footer { text-align: center; font-size: 0.8rem; color: #aaa; margin-top: 40px; }
+
+        /* Debug Box (Optional, hidden usually) */
+        #debug-log {
+            font-size: 0.7rem; color: #aaa; margin-top: 20px; 
+            background: #f0f0f0; padding: 5px; border-radius: 5px; display: none;
+        }
     </style>
 </head>
 <body>
@@ -174,14 +177,15 @@
             </div>
         </div>
 
-        <!-- FEED GAME -->
+        <!-- PERSISTENT FEED GAME -->
         <div class="card" id="card-game">
             <h2>🍔 给她吃！！！！！</h2>
             <p>她喜欢麦当劳的薯饼。</p>
             <button class="feed-btn" onclick="feedHamster()">
                 <span>🥔</span> 塞她嘴里！
             </button>
-            <div class="feed-counter">薯饼已吃: <span id="count">0</span></div>
+            <div class="feed-counter">薯饼已吃: <span id="count">...</span></div>
+            <div id="debug-log">Debug Info: <span id="debug-msg">OK</span></div>
         </div>
 
         <!-- STAR GUARDIANS -->
@@ -215,44 +219,69 @@
     </footer>
 
     <script>
-        // --- 1. SCHEDULE LOGIC ---
-        function updateStatus() {
-            const now = new Date();
-            const currentHour = now.getHours();
-            
-            const badge = document.getElementById('status-badge');
-            const timerText = document.getElementById('timer-text');
-            const countdown = document.getElementById('countdown');
+        // --- API CONFIGURATION ---
+        // Using "cuishu_fan_club" and "feed_count"
+        const NAMESPACE = "cuishu_fan_club";
+        const KEY = "feed_count";
+        const LOCAL_STORAGE_KEY = "cuishu_local_count_backup";
+        
+        const API_URL_READ = `https://api.counterapi.dev/v1/${NAMESPACE}/${KEY}/`;
+        const API_URL_UP   = `https://api.counterapi.dev/v1/${NAMESPACE}/${KEY}/up`;
 
-            // LIVE: Only if hour is 21, 22, or 23.
-            if (currentHour >= 21) {
-                badge.className = "status-badge status-live";
-                badge.innerText = "LIVE NOW! 🔴";
-                timerText.innerText = "Stream is ongoing!";
-                countdown.innerText = "Until Midnight 🌙";
-            } 
-            // OFFLINE
-            else {
-                badge.className = "status-badge status-offline";
-                badge.innerText = "OFFLINE 😴";
-                timerText.innerText = "Next Stream In:";
-                let target = new Date();
-                target.setHours(21, 0, 0, 0);
-                const diff = target - now;
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                countdown.innerText = `${hours}h ${minutes}m ${seconds}s`;
+        function logDebug(msg) {
+            console.log(msg);
+            // Uncomment to show debug on screen
+            // document.getElementById('debug-log').style.display = 'block';
+            // document.getElementById('debug-msg').innerText = msg;
+        }
+
+        // --- 1. SMART LOAD COUNT ---
+        async function loadCount() {
+            let serverCount = 0;
+            let localCount = parseInt(localStorage.getItem(LOCAL_STORAGE_KEY)) || 0;
+
+            try {
+                let response = await fetch(API_URL_READ);
+                if (response.ok) {
+                    let data = await response.json();
+                    serverCount = data.count;
+                }
+            } catch (error) {
+                logDebug("Load failed (offline?), using backup.");
+            }
+
+            // Always use the BIGGER number (Server or Local backup)
+            let finalCount = Math.max(serverCount, localCount);
+            document.getElementById('count').innerText = finalCount;
+            
+            // Sync local storage if server was bigger
+            if (serverCount > localCount) {
+                localStorage.setItem(LOCAL_STORAGE_KEY, serverCount);
             }
         }
-        setInterval(updateStatus, 1000);
-        updateStatus();
+        loadCount();
 
-        // --- 2. GAME LOGIC ---
-        let hashbrownsEaten = 0;
-        function feedHamster() {
-            hashbrownsEaten++;
-            document.getElementById('count').innerText = hashbrownsEaten;
+        // --- 2. OPTIMISTIC FEED LOGIC ---
+        async function feedHamster() {
+            const countEl = document.getElementById('count');
+            
+            // A. INSTANT UPDATE (Optimistic)
+            // We increment immediately without waiting for server
+            let currentVal = parseInt(countEl.innerText) || 0;
+            let newVal = currentVal + 1;
+            countEl.innerText = newVal;
+            
+            // Save to LocalStorage instantly as backup
+            localStorage.setItem(LOCAL_STORAGE_KEY, newVal);
+
+            // B. Visual Effects
+            confetti({
+                particleCount: 50,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#FFD54F', '#FF8F00', '#FFFFFF']
+            });
+
             const btn = document.querySelector('.feed-btn');
             const floatText = document.createElement('div');
             floatText.innerText = "+1 🥔";
@@ -264,9 +293,49 @@
             document.body.appendChild(floatText);
             setTimeout(() => { floatText.style.transform = 'translateY(-50px)'; floatText.style.opacity = '0'; }, 50);
             setTimeout(() => { floatText.remove(); }, 1000);
+
+            // C. Send to Server (Background)
+            // If this fails (Rate limit/Network), we DON'T CARE. 
+            // We already updated the UI and saved to LocalStorage.
+            try {
+                fetch(API_URL_UP).catch(err => {
+                    logDebug("Background sync failed (ignored): " + err.message);
+                });
+            } catch (e) {
+                // Ignore errors to keep UI smooth
+            }
         }
 
-        // --- 3. FALLING ITEMS ---
+        // --- 3. SCHEDULE LOGIC ---
+        function updateStatus() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const badge = document.getElementById('status-badge');
+            const timerText = document.getElementById('timer-text');
+            const countdown = document.getElementById('countdown');
+
+            if (currentHour >= 21) {
+                badge.className = "status-badge status-live";
+                badge.innerText = "直播中! 🔴";
+                timerText.innerText = "正在直播!";
+                countdown.innerText = "直到午夜 🌙";
+            } else {
+                badge.className = "status-badge status-offline";
+                badge.innerText = "休息中 😴";
+                timerText.innerText = "下次直播:";
+                let target = new Date();
+                target.setHours(21, 0, 0, 0);
+                const diff = target - now;
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                countdown.innerText = `${hours}小时 ${minutes}分 ${seconds}秒`;
+            }
+        }
+        setInterval(updateStatus, 1000);
+        updateStatus();
+
+        // --- 4. FALLING ITEMS ---
         function createFallingItem() {
             const container = document.getElementById('background-container');
             const item = document.createElement('div');
@@ -282,10 +351,10 @@
         }
         setInterval(createFallingItem, 300);
 
-        // --- 4. COPY ID ---
+        // --- 5. COPY ID ---
         function copyID() {
             navigator.clipboard.writeText("94582611501");
-            alert("Douyin ID Copied! 🐹");
+            alert("抖音号已复制! 🐹");
         }
     </script>
 
