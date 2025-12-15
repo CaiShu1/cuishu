@@ -16,6 +16,7 @@
             --gold: #FFD700;
             --silver: #C0C0C0;
             --bronze: #CD7F32;
+            --live-red: #FF1744;
         }
 
         * {
@@ -34,22 +35,14 @@
             position: relative;
         }
 
-        /* --- FALLING HASH BROWNS ANIMATION --- */
+        /* --- FALLING ITEMS --- */
         #background-container {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; /* Let clicks pass through */
-            z-index: -1;
-            overflow: hidden;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: -1; overflow: hidden;
         }
-
         .falling-item {
-            position: absolute;
-            font-size: 24px;
-            animation: fall linear infinite;
-            opacity: 0.7;
+            position: absolute; font-size: 24px; animation: fall linear infinite; opacity: 0.7;
         }
-
         @keyframes fall {
             0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
             10% { opacity: 1; }
@@ -59,12 +52,9 @@
         /* --- HEADER --- */
         header {
             background: linear-gradient(180deg, var(--hamster-pink) 0%, var(--soft-bg) 100%);
-            text-align: center;
-            padding: 40px 20px 20px;
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
-            position: relative;
-            z-index: 2;
+            text-align: center; padding: 40px 20px 20px;
+            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            position: relative; z-index: 2;
         }
 
         @keyframes float {
@@ -73,176 +63,80 @@
         }
 
         .icon-container {
-            width: 160px;
-            height: 160px;
-            margin: 0 auto 15px;
-            border-radius: 50%;
-            border: 6px solid var(--white);
-            box-shadow: 0 8px 20px rgba(255, 105, 180, 0.3);
-            overflow: hidden;
-            background-color: white;
-            animation: float 3s infinite ease-in-out;
-            cursor: pointer;
-            transition: transform 0.3s;
+            width: 160px; height: 160px; margin: 0 auto 15px; border-radius: 50%;
+            border: 6px solid var(--white); box-shadow: 0 8px 20px rgba(255, 105, 180, 0.3);
+            overflow: hidden; background-color: white; animation: float 3s infinite ease-in-out;
+            cursor: pointer; transition: transform 0.3s;
         }
+        .icon-container:hover { transform: scale(1.1) rotate(-5deg); }
+        .icon-container img { width: 100%; height: 100%; object-fit: cover; }
 
-        .icon-container:hover {
-            transform: scale(1.1) rotate(-5deg);
-        }
-
-        .icon-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        h1 {
-            font-size: 2.2rem;
-            color: var(--crispy-orange);
-            margin-bottom: 5px;
-            text-shadow: 2px 2px 0px var(--white);
-        }
-
-        .tagline {
-            font-size: 1rem;
-            color: #888;
-            font-weight: 500;
-            margin-bottom: 20px;
-        }
+        h1 { font-size: 2.2rem; color: var(--crispy-orange); margin-bottom: 5px; text-shadow: 2px 2px 0px var(--white); }
+        .tagline { font-size: 1rem; color: #888; font-weight: 500; margin-bottom: 20px; }
 
         /* --- CONTAINER --- */
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 0 20px;
-            perspective: 1000px; /* Essential for 3D tilt */
-        }
+        .container { max-width: 600px; margin: 0 auto; padding: 0 20px; perspective: 1000px; }
 
-        /* --- 3D TILT CARDS --- */
+        /* --- CARDS --- */
         .card {
-            background: var(--white);
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            text-align: center;
-            transform-style: preserve-3d;
-            transition: transform 0.1s ease-out; /* Smooth follow */
+            background: var(--white); border-radius: 20px; padding: 25px; margin-bottom: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); text-align: center;
+            transform-style: preserve-3d; transition: transform 0.1s ease-out;
         }
+        .card-content { transform: translateZ(20px); }
+        h2 { font-size: 1.4rem; color: var(--text-dark); margin-bottom: 15px; border-bottom: 2px solid var(--soft-bg); padding-bottom: 10px; display: inline-block; }
 
-        .card-content {
-            transform: translateZ(20px); /* Makes text pop out in 3D */
+        /* --- LIVE STATUS WIDGET --- */
+        .status-badge {
+            display: inline-block; padding: 8px 20px; border-radius: 50px;
+            font-weight: bold; font-size: 1.1rem; margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
+        .status-offline { background-color: #EEE; color: #777; border: 2px solid #CCC; }
+        .status-live { background-color: var(--live-red); color: white; border: 2px solid #D50000; animation: pulse 1.5s infinite; }
+        
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 23, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0); } }
 
-        h2 {
-            font-size: 1.4rem;
-            color: var(--text-dark);
-            margin-bottom: 15px;
-            border-bottom: 2px solid var(--soft-bg);
-            padding-bottom: 10px;
-            display: inline-block;
-        }
+        .time-display { font-family: monospace; font-size: 1.2rem; color: var(--crispy-orange); font-weight: bold; margin-top: 5px; }
 
-        /* --- IMAGES --- */
-        .vtuber-model {
-            width: 100%;
-            border-radius: 15px;
-            margin-top: 10px;
-            border: 3px solid var(--potato-yellow);
-            pointer-events: none;
-        }
-
-        /* --- GAME SECTION --- */
-        .feed-btn {
-            background: var(--crispy-orange);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 6px 0 #E65100;
-            transition: all 0.1s;
-            margin-top: 10px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 10px auto;
-            gap: 10px;
-        }
-
-        .feed-btn:active {
-            box-shadow: 0 0 0 #E65100;
-            transform: translateY(6px);
-        }
-
-        .feed-counter {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--crispy-orange);
-            margin-top: 10px;
-        }
-
-        /* --- STAR GUARDIAN CARD --- */
+        /* --- STAR GUARDIAN --- */
         .star-guardian-card {
-            background-image: url('IMG_2005.jpg'); 
-            background-size: cover;
-            background-position: center;
-            color: white;
-            border: none;
-            position: relative;
-            overflow: hidden;
+            background-image: url('IMG_2005.jpg'); background-size: cover; background-position: center;
+            color: white; border: none; position: relative; overflow: hidden;
         }
-
-        .star-guardian-card::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.4); 
-            z-index: 0;
-        }
-
+        .star-guardian-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); z-index: 0; }
         .star-guardian-content { position: relative; z-index: 1; transform: translateZ(30px); }
+        .star-guardian-card h2 { color: #FFD700; border-color: rgba(255, 255, 255, 0.3); }
 
-        .star-guardian-card h2 {
-            color: #FFD700;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        /* --- GUARDIAN LIST --- */
+        /* --- LIST STYLES --- */
         .guardian-list { list-style: none; text-align: left; padding: 0 5px; }
-
         .guardian-item {
             display: flex; align-items: center; padding: 10px; margin-bottom: 8px;
-            background-color: rgba(255, 255, 255, 0.15);
-            border-radius: 10px; backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2); color: white;
-            transition: transform 0.2s;
+            background-color: rgba(255, 255, 255, 0.15); border-radius: 10px; backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2); color: white; transition: transform 0.2s;
         }
-        
         .guardian-item:hover { transform: scale(1.02); background-color: rgba(255, 255, 255, 0.25); }
-
         .rank-num { font-weight: 900; font-size: 1.2rem; width: 40px; text-align: center; margin-right: 15px; font-style: italic; }
-        .user-name { font-weight: 600; font-size: 1rem; }
-
+        
         .top-1 { background: linear-gradient(90deg, rgba(255, 215, 0, 0.3), rgba(255, 255, 255, 0.1)); border: 2px solid var(--gold); }
         .top-1 .rank-num { color: #FFD700; }
-        .top-2 { border: 2px solid var(--silver); }
-        .top-2 .rank-num { color: #E0E0E0; }
-        .top-3 { border: 2px solid var(--bronze); }
-        .top-3 .rank-num { color: #CD7F32; }
+        .top-2 { border: 2px solid var(--silver); } .top-2 .rank-num { color: #E0E0E0; }
+        .top-3 { border: 2px solid var(--bronze); } .top-3 .rank-num { color: #CD7F32; }
 
-        /* --- ID BOX --- */
-        .id-box {
-            background-color: var(--text-dark);
-            color: var(--potato-yellow);
-            padding: 15px; border-radius: 12px;
-            font-family: 'Courier New', monospace; font-size: 1.4rem; font-weight: bold;
-            margin: 15px 0; cursor: pointer; transition: 0.2s;
+        /* --- GAME & ID --- */
+        .feed-btn {
+            background: var(--crispy-orange); color: white; border: none; padding: 15px 40px;
+            font-size: 1.2rem; border-radius: 50px; cursor: pointer; box-shadow: 0 6px 0 #E65100;
+            margin: 10px auto; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold;
         }
-        .id-box:active { transform: scale(0.95); }
+        .feed-btn:active { box-shadow: 0 0 0 #E65100; transform: translateY(6px); }
+        .feed-counter { font-size: 1.2rem; font-weight: bold; color: var(--crispy-orange); margin-top: 10px; }
+
+        .id-box {
+            background-color: var(--text-dark); color: var(--potato-yellow); padding: 15px; border-radius: 12px;
+            font-family: 'Courier New', monospace; font-size: 1.4rem; font-weight: bold; margin: 15px 0; cursor: pointer;
+        }
+        .vtuber-model { width: 100%; border-radius: 15px; margin-top: 10px; border: 3px solid var(--potato-yellow); pointer-events: none; }
         .id-label { font-size: 0.8rem; color: #aaa; display: block; margin-bottom: 5px; font-family: sans-serif; }
 
         footer { text-align: center; font-size: 0.8rem; color: #aaa; margin-top: 40px; }
@@ -250,7 +144,6 @@
 </head>
 <body>
 
-    <!-- FALLING BACKGROUND -->
     <div id="background-container"></div>
 
     <header>
@@ -263,10 +156,21 @@
 
     <div class="container">
 
+        <!-- LIVE STATUS CARD -->
+        <div class="card" id="card-status">
+            <div class="card-content">
+                <h2>⏰ Stream Schedule</h2>
+                <div id="status-badge" class="status-badge status-offline">OFFLINE 😴</div>
+                <div id="timer-text">Next Stream in:</div>
+                <div id="countdown" class="time-display">Loading...</div>
+                <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Daily at 21:00 (9 PM)</p>
+            </div>
+        </div>
+
         <!-- ID Card -->
         <div class="card" id="card-1">
             <div class="card-content">
-                <h2>Find Her on Douyin 🇨🇳</h2>
+                <h2>Find Her on Douyin</h2>
                 <div class="id-box" onclick="copyID()">
                     <span class="id-label">Tap to Copy ID</span>
                     94582611501
@@ -274,52 +178,37 @@
             </div>
         </div>
 
-        <!-- FEED THE HAMSTER GAME -->
+        <!-- FEED GAME -->
         <div class="card" id="card-game">
             <div class="card-content">
                 <h2>🍔 Feed The Hamster!</h2>
-                <p>她喜欢麥當勞的脆薯餅.</p>
-                
+                <p>She loves McDonald's Hash Browns.</p>
                 <button class="feed-btn" onclick="feedHamster()">
-                    <span>🥔</span> 给她吃！！！
+                    <span>🥔</span> GIVE HASHBROWN
                 </button>
-                
                 <div class="feed-counter">Hash Browns Eaten: <span id="count">0</span></div>
             </div>
         </div>
 
-        <!-- STAR GUARDIAN CARD -->
+        <!-- STAR GUARDIANS -->
         <div class="card star-guardian-card" id="card-guardian">
             <div class="star-guardian-content">
                 <h2>🌟 Star Guardians (星守护)</h2>
                 <p style="margin-bottom: 20px; font-size: 0.9rem; opacity: 0.9;">
-                    The protectors of the Hash Brown Kingdom.
+                    Protectors of the Hash Brown Kingdom.
                 </p>
-                
                 <ul class="guardian-list">
-                    <li class="guardian-item top-1">
-                        <span class="rank-num">1</span> <span class="user-name">Allahu akber 👑</span>
-                    </li>
-                    <li class="guardian-item top-2">
-                        <span class="rank-num">2</span> <span class="user-name">狐狸摸鱼🦊</span>
-                    </li>
-                    <li class="guardian-item top-3">
-                        <span class="rank-num">3</span> <span class="user-name">懒得取名字🐹</span>
-                    </li>
-                    <li class="guardian-item">
-                        <span class="rank-num">4</span> <span class="user-name">于笙</span>
-                    </li>
-                    <li class="guardian-item">
-                        <span class="rank-num">5</span> <span class="user-name">点点</span>
-                    </li>
-                    <li class="guardian-item">
-                        <span class="rank-num">6</span> <span class="user-name">虾仁不眨眼:)</span>
-                    </li>
+                    <li class="guardian-item top-1"><span class="rank-num">1</span> <span class="user-name">Allahu akber 👑</span></li>
+                    <li class="guardian-item top-2"><span class="rank-num">2</span> <span class="user-name">狐狸摸鱼🦊</span></li>
+                    <li class="guardian-item top-3"><span class="rank-num">3</span> <span class="user-name">懒得取名字🐹</span></li>
+                    <li class="guardian-item"><span class="rank-num">4</span> <span class="user-name">于笙</span></li>
+                    <li class="guardian-item"><span class="rank-num">5</span> <span class="user-name">点点</span></li>
+                    <li class="guardian-item"><span class="rank-num">6</span> <span class="user-name">虾仁不眨眼:)</span></li>
                 </ul>
             </div>
         </div>
 
-        <!-- Avatar Section -->
+        <!-- Avatar -->
         <div class="card" id="card-avatar">
             <div class="card-content">
                 <h2>Streamer Avatar</h2>
@@ -333,101 +222,108 @@
         <p>Unofficial Fan Page | Made by a proud 脆薯饼</p>
     </footer>
 
-    <!-- JAVASCRIPT FOR INTERACTIONS -->
     <script>
-        // 1. COPY ID FUNCTION
-        function copyID() {
-            navigator.clipboard.writeText("94582611501");
-            alert("Douyin ID Copied! Go find our hamster queen! 🐹");
-        }
+        // --- 1. COUNTDOWN TIMER LOGIC ---
+        function updateStatus() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            
+            const badge = document.getElementById('status-badge');
+            const timerText = document.getElementById('timer-text');
+            const countdown = document.getElementById('countdown');
 
-        // 2. FEED HAMSTER GAME
+            // IF IT IS LIVE (Between 21:00 and 01:00 usually)
+            if (currentHour >= 21 || currentHour < 2) {
+                badge.className = "status-badge status-live";
+                badge.innerText = "LIVE NOW! 🔴";
+                timerText.innerText = "She is playing right now!";
+                countdown.innerText = "Go Watch! 📺";
+            } 
+            // IF IT IS OFFLINE
+            else {
+                badge.className = "status-badge status-offline";
+                badge.innerText = "OFFLINE 😴";
+                timerText.innerText = "Next Stream Starts In:";
+
+                // Calculate time until next 21:00
+                let target = new Date();
+                target.setHours(21, 0, 0, 0);
+                
+                // If it's already past today's target (but before midnight and somehow not live logic), add a day
+                if (now > target) {
+                    target.setDate(target.getDate() + 1);
+                }
+
+                const diff = target - now;
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                countdown.innerText = `${hours}h ${minutes}m ${seconds}s`;
+            }
+        }
+        setInterval(updateStatus, 1000); // Update every second
+        updateStatus(); // Run immediately on load
+
+        // --- 2. GAME LOGIC ---
         let hashbrownsEaten = 0;
         function feedHamster() {
             hashbrownsEaten++;
             document.getElementById('count').innerText = hashbrownsEaten;
             
-            // Create floating "+1" animation
             const btn = document.querySelector('.feed-btn');
             const floatText = document.createElement('div');
             floatText.innerText = "+1 🥔";
             floatText.style.position = 'absolute';
-            floatText.style.color = '#E65100';
-            floatText.style.fontWeight = 'bold';
+            floatText.style.color = '#E65100'; floatText.style.fontWeight = 'bold';
             floatText.style.left = (btn.getBoundingClientRect().left + 50) + 'px';
             floatText.style.top = (btn.getBoundingClientRect().top) + 'px';
-            floatText.style.transition = 'all 1s ease-out';
-            floatText.style.pointerEvents = 'none';
+            floatText.style.transition = 'all 1s ease-out'; floatText.style.pointerEvents = 'none';
             document.body.appendChild(floatText);
 
-            // Animate it up and fade out
-            setTimeout(() => {
-                floatText.style.transform = 'translateY(-50px)';
-                floatText.style.opacity = '0';
-            }, 50);
-
-            // Remove element after animation
-            setTimeout(() => {
-                floatText.remove();
-            }, 1000);
+            setTimeout(() => { floatText.style.transform = 'translateY(-50px)'; floatText.style.opacity = '0'; }, 50);
+            setTimeout(() => { floatText.remove(); }, 1000);
         }
 
-        // 3. FALLING BACKGROUND (HASH BROWNS & FRIES)
+        // --- 3. FALLING ITEMS ---
         function createFallingItem() {
             const container = document.getElementById('background-container');
             const item = document.createElement('div');
             item.classList.add('falling-item');
-            
-            // Randomly choose an item
             const items = ['🥔', '🍟', '🐹', '✨'];
             item.innerText = items[Math.floor(Math.random() * items.length)];
-            
-            // Random starting position (horizontal)
             item.style.left = Math.random() * 100 + 'vw';
-            
-            // Random animation duration (falling speed)
-            const duration = Math.random() * 3 + 3; // between 3s and 6s
+            const duration = Math.random() * 3 + 3;
             item.style.animationDuration = duration + 's';
-            
-            // Random size
             item.style.fontSize = (Math.random() * 20 + 20) + 'px';
-
             container.appendChild(item);
-
-            // Remove after animation ends to keep memory low
-            setTimeout(() => {
-                item.remove();
-            }, duration * 1000);
+            setTimeout(() => { item.remove(); }, duration * 1000);
         }
-
-        // Spawn a new item every 300ms
         setInterval(createFallingItem, 300);
 
-        // 4. 3D TILT EFFECT FOR CARDS
-        const cards = document.querySelectorAll('.card');
+        // --- 4. COPY ID ---
+        function copyID() {
+            navigator.clipboard.writeText("94582611501");
+            alert("Douyin ID Copied! 🐹");
+        }
 
+        // --- 5. 3D TILT ---
+        const cards = document.querySelectorAll('.card');
         cards.forEach(card => {
             card.addEventListener('mousemove', (e) => {
                 const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left; // Mouse position inside card
+                const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
-
                 const centerX = rect.width / 2;
                 const centerY = rect.height / 2;
-
-                // Calculate rotation (max 10 degrees)
                 const rotateX = ((y - centerY) / centerY) * -5;
                 const rotateY = ((x - centerX) / centerX) * 5;
-
                 card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
             });
-
-            // Reset when mouse leaves
             card.addEventListener('mouseleave', () => {
                 card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
             });
         });
-
     </script>
 
 </body>
