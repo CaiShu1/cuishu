@@ -2,7 +2,6 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- FIX 1: Prevent zooming on mobile devices -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>脆薯 (Cuì Shǔ) | Official Unofficial Fan Page</title>
     <!-- Import Confetti Library -->
@@ -27,7 +26,6 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* FIX 2: Prevent iOS text selection highlighting */
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -38,7 +36,6 @@
             padding-bottom: 50px;
             overflow-x: hidden;
             position: relative;
-            /* FIX 3: Prevent pull-to-refresh on mobile (optional but good for games) */
             overscroll-behavior: none;
         }
 
@@ -130,7 +127,6 @@
             background: var(--crispy-orange); color: white; border: none; padding: 15px 40px;
             font-size: 1.2rem; border-radius: 50px; cursor: pointer; box-shadow: 0 6px 0 #E65100;
             margin: 10px auto; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold;
-            /* FIX 4: Disable double-tap zoom specifically on the button */
             touch-action: manipulation;
             user-select: none;
             -webkit-user-select: none;
@@ -146,11 +142,6 @@
         .id-label { font-size: 0.8rem; color: #aaa; display: block; margin-bottom: 5px; font-family: sans-serif; }
 
         footer { text-align: center; font-size: 0.8rem; color: #aaa; margin-top: 40px; }
-
-        #debug-log {
-            font-size: 0.7rem; color: #aaa; margin-top: 20px; 
-            background: #f0f0f0; padding: 5px; border-radius: 5px; display: none;
-        }
     </style>
 </head>
 <body>
@@ -193,7 +184,6 @@
                 <span>🥔</span> 塞她嘴里！
             </button>
             <div class="feed-counter">薯饼已吃: <span id="count">...</span></div>
-            <div id="debug-log">Debug Info: <span id="debug-msg">OK</span></div>
         </div>
 
         <!-- STAR GUARDIANS -->
@@ -227,52 +217,49 @@
     </footer>
 
     <script>
-        // --- API CONFIGURATION ---
-        const NAMESPACE = "cuishu_fan_club";
-        const KEY = "feed_count";
-        const LOCAL_STORAGE_KEY = "cuishu_local_count_backup";
+        // --- API CONFIGURATION (kvstore.io with Debounce) ---
+        // We use kvstore because it allows SETTING the value (overwriting).
+        // This fixes the "PC is at 111, Server is at 95" problem.
+        const STORE_ID = "675e0f7e91147570494025f1"; 
+        const KEY_NAME = "cuishu_global_sync_v4"; // New key to force sync
+        const API_URL = `https://kvstore.io/v1/k/${STORE_ID}/${KEY_NAME}`;
         
-        const API_URL_READ = `https://api.counterapi.dev/v1/${NAMESPACE}/${KEY}/`;
-        const API_URL_UP   = `https://api.counterapi.dev/v1/${NAMESPACE}/${KEY}/up`;
+        const LOCAL_KEY = "cuishu_local_total";
+        let localCount = parseInt(localStorage.getItem(LOCAL_KEY)) || 0;
+        let syncTimeout = null;
 
-        function logDebug(msg) {
-            console.log(msg);
-        }
-
-        // --- 1. SMART LOAD COUNT ---
+        // --- 1. INITIAL LOAD & SYNC ---
         async function loadCount() {
-            let serverCount = 0;
-            let localCount = parseInt(localStorage.getItem(LOCAL_STORAGE_KEY)) || 0;
-
             try {
-                let response = await fetch(API_URL_READ);
+                let response = await fetch(API_URL);
                 if (response.ok) {
-                    let data = await response.json();
-                    serverCount = data.count;
+                    let text = await response.text();
+                    let serverCount = parseInt(text) || 0;
+                    
+                    // Logic: Always take the higher number
+                    if (serverCount > localCount) {
+                        localCount = serverCount;
+                        localStorage.setItem(LOCAL_KEY, localCount);
+                    }
                 }
-            } catch (error) {
-                logDebug("Load failed (offline?), using backup.");
+            } catch (e) {
+                console.log("Offline or blocked, keeping local count");
             }
-
-            let finalCount = Math.max(serverCount, localCount);
-            document.getElementById('count').innerText = finalCount;
-            
-            if (serverCount > localCount) {
-                localStorage.setItem(LOCAL_STORAGE_KEY, serverCount);
-            }
+            document.getElementById('count').innerText = localCount;
         }
         loadCount();
+        
+        // Poll server every 5 seconds to get updates from other people
+        setInterval(loadCount, 5000);
 
-        // --- 2. OPTIMISTIC FEED LOGIC ---
-        async function feedHamster() {
-            const countEl = document.getElementById('count');
-            
-            let currentVal = parseInt(countEl.innerText) || 0;
-            let newVal = currentVal + 1;
-            countEl.innerText = newVal;
-            
-            localStorage.setItem(LOCAL_STORAGE_KEY, newVal);
+        // --- 2. CLICK LOGIC ---
+        function feedHamster() {
+            // A. Update Local Immediately (No Lag)
+            localCount++;
+            localStorage.setItem(LOCAL_KEY, localCount);
+            document.getElementById('count').innerText = localCount;
 
+            // B. Visuals
             confetti({
                 particleCount: 50,
                 spread: 70,
@@ -292,11 +279,26 @@
             setTimeout(() => { floatText.style.transform = 'translateY(-50px)'; floatText.style.opacity = '0'; }, 50);
             setTimeout(() => { floatText.remove(); }, 1000);
 
+            // C. DEBOUNCED SERVER SYNC
+            // Instead of sending every click, wait 1 second after last click
+            // Then send the TOTAL number. This overwrites the server.
+            clearTimeout(syncTimeout);
+            syncTimeout = setTimeout(() => {
+                sendToServer(localCount);
+            }, 1000);
+        }
+
+        async function sendToServer(value) {
             try {
-                fetch(API_URL_UP).catch(err => {
-                    logDebug("Background sync failed (ignored): " + err.message);
+                // We POST the raw number. KVStore saves it.
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: value.toString(),
+                    headers: { 'Content-Type': 'text/plain' }
                 });
-            } catch (e) {}
+            } catch (error) {
+                console.log("Background sync failed, will retry later");
+            }
         }
 
         // --- 3. SCHEDULE LOGIC ---
