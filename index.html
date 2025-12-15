@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- FIX 1: Prevent zooming on mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>脆薯 (Cuì Shǔ) | Official Unofficial Fan Page</title>
     <!-- Import Confetti Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -26,6 +27,8 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* FIX 2: Prevent iOS text selection highlighting */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -35,6 +38,8 @@
             padding-bottom: 50px;
             overflow-x: hidden;
             position: relative;
+            /* FIX 3: Prevent pull-to-refresh on mobile (optional but good for games) */
+            overscroll-behavior: none;
         }
 
         /* --- FALLING ITEMS --- */
@@ -125,6 +130,10 @@
             background: var(--crispy-orange); color: white; border: none; padding: 15px 40px;
             font-size: 1.2rem; border-radius: 50px; cursor: pointer; box-shadow: 0 6px 0 #E65100;
             margin: 10px auto; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold;
+            /* FIX 4: Disable double-tap zoom specifically on the button */
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
         }
         .feed-btn:active { box-shadow: 0 0 0 #E65100; transform: translateY(6px); }
         .feed-counter { font-size: 1.2rem; font-weight: bold; color: var(--crispy-orange); margin-top: 10px; }
@@ -138,7 +147,6 @@
 
         footer { text-align: center; font-size: 0.8rem; color: #aaa; margin-top: 40px; }
 
-        /* Debug Box (Optional, hidden usually) */
         #debug-log {
             font-size: 0.7rem; color: #aaa; margin-top: 20px; 
             background: #f0f0f0; padding: 5px; border-radius: 5px; display: none;
@@ -220,7 +228,6 @@
 
     <script>
         // --- API CONFIGURATION ---
-        // Using "cuishu_fan_club" and "feed_count"
         const NAMESPACE = "cuishu_fan_club";
         const KEY = "feed_count";
         const LOCAL_STORAGE_KEY = "cuishu_local_count_backup";
@@ -230,9 +237,6 @@
 
         function logDebug(msg) {
             console.log(msg);
-            // Uncomment to show debug on screen
-            // document.getElementById('debug-log').style.display = 'block';
-            // document.getElementById('debug-msg').innerText = msg;
         }
 
         // --- 1. SMART LOAD COUNT ---
@@ -250,11 +254,9 @@
                 logDebug("Load failed (offline?), using backup.");
             }
 
-            // Always use the BIGGER number (Server or Local backup)
             let finalCount = Math.max(serverCount, localCount);
             document.getElementById('count').innerText = finalCount;
             
-            // Sync local storage if server was bigger
             if (serverCount > localCount) {
                 localStorage.setItem(LOCAL_STORAGE_KEY, serverCount);
             }
@@ -265,16 +267,12 @@
         async function feedHamster() {
             const countEl = document.getElementById('count');
             
-            // A. INSTANT UPDATE (Optimistic)
-            // We increment immediately without waiting for server
             let currentVal = parseInt(countEl.innerText) || 0;
             let newVal = currentVal + 1;
             countEl.innerText = newVal;
             
-            // Save to LocalStorage instantly as backup
             localStorage.setItem(LOCAL_STORAGE_KEY, newVal);
 
-            // B. Visual Effects
             confetti({
                 particleCount: 50,
                 spread: 70,
@@ -294,16 +292,11 @@
             setTimeout(() => { floatText.style.transform = 'translateY(-50px)'; floatText.style.opacity = '0'; }, 50);
             setTimeout(() => { floatText.remove(); }, 1000);
 
-            // C. Send to Server (Background)
-            // If this fails (Rate limit/Network), we DON'T CARE. 
-            // We already updated the UI and saved to LocalStorage.
             try {
                 fetch(API_URL_UP).catch(err => {
                     logDebug("Background sync failed (ignored): " + err.message);
                 });
-            } catch (e) {
-                // Ignore errors to keep UI smooth
-            }
+            } catch (e) {}
         }
 
         // --- 3. SCHEDULE LOGIC ---
