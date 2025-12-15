@@ -75,15 +75,15 @@
         .tagline { font-size: 1rem; color: #888; font-weight: 500; margin-bottom: 20px; }
 
         /* --- CONTAINER --- */
-        .container { max-width: 600px; margin: 0 auto; padding: 0 20px; perspective: 1000px; }
+        .container { max-width: 600px; margin: 0 auto; padding: 0 20px; }
 
-        /* --- CARDS --- */
+        /* --- CARDS (NO MOTION) --- */
         .card {
             background: var(--white); border-radius: 20px; padding: 25px; margin-bottom: 25px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05); text-align: center;
-            transform-style: preserve-3d; transition: transform 0.1s ease-out;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center;
+            /* Removed transform and perspective styles */
         }
-        .card-content { transform: translateZ(20px); }
+        
         h2 { font-size: 1.4rem; color: var(--text-dark); margin-bottom: 15px; border-bottom: 2px solid var(--soft-bg); padding-bottom: 10px; display: inline-block; }
 
         /* --- LIVE STATUS WIDGET --- */
@@ -105,7 +105,7 @@
             color: white; border: none; position: relative; overflow: hidden;
         }
         .star-guardian-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); z-index: 0; }
-        .star-guardian-content { position: relative; z-index: 1; transform: translateZ(30px); }
+        .star-guardian-content { position: relative; z-index: 1; }
         .star-guardian-card h2 { color: #FFD700; border-color: rgba(255, 255, 255, 0.3); }
 
         /* --- LIST STYLES --- */
@@ -158,36 +158,30 @@
 
         <!-- LIVE STATUS CARD -->
         <div class="card" id="card-status">
-            <div class="card-content">
-                <h2>⏰ Stream Schedule</h2>
-                <div id="status-badge" class="status-badge status-offline">OFFLINE 😴</div>
-                <div id="timer-text">Next Stream in:</div>
-                <div id="countdown" class="time-display">Loading...</div>
-                <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Daily: 21:00 - 00:00 (Midnight)</p>
-            </div>
+            <h2>⏰ Stream Schedule</h2>
+            <div id="status-badge" class="status-badge status-offline">OFFLINE 😴</div>
+            <div id="timer-text">Next Stream in:</div>
+            <div id="countdown" class="time-display">Loading...</div>
+            <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Daily: 21:00 - 00:00 (Midnight)</p>
         </div>
 
         <!-- ID Card -->
         <div class="card" id="card-1">
-            <div class="card-content">
-                <h2>Find Her on Douyin</h2>
-                <div class="id-box" onclick="copyID()">
-                    <span class="id-label">Tap to Copy ID</span>
-                    94582611501
-                </div>
+            <h2>Find Her on Douyin</h2>
+            <div class="id-box" onclick="copyID()">
+                <span class="id-label">Tap to Copy ID</span>
+                94582611501
             </div>
         </div>
 
         <!-- FEED GAME -->
         <div class="card" id="card-game">
-            <div class="card-content">
-                <h2>🍔 Feed The Hamster!</h2>
-                <p>She loves McDonald's Hash Browns.</p>
-                <button class="feed-btn" onclick="feedHamster()">
-                    <span>🥔</span> GIVE HASHBROWN
-                </button>
-                <div class="feed-counter">Hash Browns Eaten: <span id="count">0</span></div>
-            </div>
+            <h2>🍔 Feed The Hamster!</h2>
+            <p>She loves McDonald's Hash Browns.</p>
+            <button class="feed-btn" onclick="feedHamster()">
+                <span>🥔</span> GIVE HASHBROWN
+            </button>
+            <div class="feed-counter">Hash Browns Eaten: <span id="count">0</span></div>
         </div>
 
         <!-- STAR GUARDIANS -->
@@ -210,10 +204,8 @@
 
         <!-- Avatar -->
         <div class="card" id="card-avatar">
-            <div class="card-content">
-                <h2>Streamer Avatar</h2>
-                <img src="IMG_2003.jpg" alt="Vtuber Model" class="vtuber-model">
-            </div>
+            <h2>Streamer Avatar</h2>
+            <img src="IMG_2003.jpg" alt="Vtuber Model" class="vtuber-model">
         </div>
 
     </div>
@@ -223,7 +215,7 @@
     </footer>
 
     <script>
-        // --- 1. SCHEDULE LOGIC (21:00 - 00:00) ---
+        // --- 1. SCHEDULE LOGIC ---
         function updateStatus() {
             const now = new Date();
             const currentHour = now.getHours();
@@ -233,7 +225,6 @@
             const countdown = document.getElementById('countdown');
 
             // LIVE: Only if hour is 21, 22, or 23.
-            // (00:00 is technically 0, so she is offline then)
             if (currentHour >= 21) {
                 badge.className = "status-badge status-live";
                 badge.innerText = "LIVE NOW! 🔴";
@@ -245,17 +236,12 @@
                 badge.className = "status-badge status-offline";
                 badge.innerText = "OFFLINE 😴";
                 timerText.innerText = "Next Stream In:";
-
-                // Target is 21:00 Today
                 let target = new Date();
                 target.setHours(21, 0, 0, 0);
-                
-                // Calculate difference
                 const diff = target - now;
                 const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
                 countdown.innerText = `${hours}h ${minutes}m ${seconds}s`;
             }
         }
@@ -301,24 +287,6 @@
             navigator.clipboard.writeText("94582611501");
             alert("Douyin ID Copied! 🐹");
         }
-
-        // --- 5. 3D TILT ---
-        const cards = document.querySelectorAll('.card');
-        cards.forEach(card => {
-            card.addEventListener('mousemove', (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                const rotateX = ((y - centerY) / centerY) * -5;
-                const rotateY = ((x - centerX) / centerX) * 5;
-                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-            });
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
-            });
-        });
     </script>
 
 </body>
