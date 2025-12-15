@@ -163,7 +163,7 @@
                 <div id="status-badge" class="status-badge status-offline">OFFLINE 😴</div>
                 <div id="timer-text">Next Stream in:</div>
                 <div id="countdown" class="time-display">Loading...</div>
-                <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Daily at 21:00 (9 PM)</p>
+                <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Daily: 21:00 - 00:00 (Midnight)</p>
             </div>
         </div>
 
@@ -223,7 +223,7 @@
     </footer>
 
     <script>
-        // --- 1. COUNTDOWN TIMER LOGIC ---
+        // --- 1. SCHEDULE LOGIC (21:00 - 00:00) ---
         function updateStatus() {
             const now = new Date();
             const currentHour = now.getHours();
@@ -232,28 +232,25 @@
             const timerText = document.getElementById('timer-text');
             const countdown = document.getElementById('countdown');
 
-            // IF IT IS LIVE (Between 21:00 and 01:00 usually)
-            if (currentHour >= 21 || currentHour < 2) {
+            // LIVE: Only if hour is 21, 22, or 23.
+            // (00:00 is technically 0, so she is offline then)
+            if (currentHour >= 21) {
                 badge.className = "status-badge status-live";
                 badge.innerText = "LIVE NOW! 🔴";
-                timerText.innerText = "She is playing right now!";
-                countdown.innerText = "Go Watch! 📺";
+                timerText.innerText = "Stream is ongoing!";
+                countdown.innerText = "Until Midnight 🌙";
             } 
-            // IF IT IS OFFLINE
+            // OFFLINE
             else {
                 badge.className = "status-badge status-offline";
                 badge.innerText = "OFFLINE 😴";
-                timerText.innerText = "Next Stream Starts In:";
+                timerText.innerText = "Next Stream In:";
 
-                // Calculate time until next 21:00
+                // Target is 21:00 Today
                 let target = new Date();
                 target.setHours(21, 0, 0, 0);
                 
-                // If it's already past today's target (but before midnight and somehow not live logic), add a day
-                if (now > target) {
-                    target.setDate(target.getDate() + 1);
-                }
-
+                // Calculate difference
                 const diff = target - now;
                 const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -262,15 +259,14 @@
                 countdown.innerText = `${hours}h ${minutes}m ${seconds}s`;
             }
         }
-        setInterval(updateStatus, 1000); // Update every second
-        updateStatus(); // Run immediately on load
+        setInterval(updateStatus, 1000);
+        updateStatus();
 
         // --- 2. GAME LOGIC ---
         let hashbrownsEaten = 0;
         function feedHamster() {
             hashbrownsEaten++;
             document.getElementById('count').innerText = hashbrownsEaten;
-            
             const btn = document.querySelector('.feed-btn');
             const floatText = document.createElement('div');
             floatText.innerText = "+1 🥔";
@@ -280,7 +276,6 @@
             floatText.style.top = (btn.getBoundingClientRect().top) + 'px';
             floatText.style.transition = 'all 1s ease-out'; floatText.style.pointerEvents = 'none';
             document.body.appendChild(floatText);
-
             setTimeout(() => { floatText.style.transform = 'translateY(-50px)'; floatText.style.opacity = '0'; }, 50);
             setTimeout(() => { floatText.remove(); }, 1000);
         }
