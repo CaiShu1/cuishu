@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>脆薯 (Cuì Shǔ) | Official Unofficial Fan Page</title>
+    <!-- Import Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        /* --- Color Palette --- */
+        :root {
+            --hamster-pink: #FFC0CB;   
+            --potato-yellow: #FFD54F;  
+            --crispy-orange: #FF8F00;  
+            --soft-bg: #FFF0F5;        
+            --text-dark: #4E342E;
+            --white: #ffffff;
+            --gold: #FFD700;
+            --silver: #C0C0C0;
+            --bronze: #CD7F32;
+            --live-red: #FF1744;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--soft-bg);
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding-bottom: 50px;
+            overflow-x: hidden;
+            position: relative;
+            overscroll-behavior: none;
+        }
+
+        /* --- FALLING ITEMS --- */
+        #background-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: -1; overflow: hidden;
+        }
+        .falling-item {
+            position: absolute; font-size: 24px; animation: fall linear infinite; opacity: 0.7;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0.7; }
+        }
+
+        /* --- HEADER --- */
+        header {
+            background: linear-gradient(180deg, var(--hamster-pink) 0%, var(--soft-bg) 100%);
+            text-align: center; padding: 40px 20px 20px;
+            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            position: relative; z-index: 2;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .icon-container {
+            width: 160px; height: 160px; margin: 0 auto 15px; border-radius: 50%;
+            border: 6px solid var(--white); box-shadow: 0 8px 20px rgba(255, 105, 180, 0.3);
+            overflow: hidden; background-color: white; animation: float 3s infinite ease-in-out;
+            cursor: pointer; transition: transform 0.3s;
+        }
+        .icon-container:hover { transform: scale(1.1) rotate(-5deg); }
+        .icon-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        h1 { font-size: 2.2rem; color: var(--crispy-orange); margin-bottom: 5px; text-shadow: 2px 2px 0px var(--white); }
+        .tagline { font-size: 1rem; color: #888; font-weight: 500; margin-bottom: 20px; }
+
+        /* --- CONTAINER --- */
+        .container { max-width: 600px; margin: 0 auto; padding: 0 20px; }
+
+        /* --- CARDS --- */
+        .card {
+            background: var(--white); border-radius: 20px; padding: 25px; margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center;
+        }
+        h2 { font-size: 1.4rem; color: var(--text-dark); margin-bottom: 15px; border-bottom: 2px solid var(--soft-bg); padding-bottom: 10px; display: inline-block; }
+
+        /* --- LIVE STATUS WIDGET --- */
+        .status-badge {
+            display: inline-block; padding: 8px 20px; border-radius: 50px;
+            font-weight: bold; font-size: 1.1rem; margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .status-offline { background-color: #EEE; color: #777; border: 2px solid #CCC; }
+        .status-live { background-color: var(--live-red); color: white; border: 2px solid #D50000; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 23, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0); } }
+        .time-display { font-family: monospace; font-size: 1.2rem; color: var(--crispy-orange); font-weight: bold; margin-top: 5px; }
+
+        /* --- STAR GUARDIAN --- */
+        .star-guardian-card {
+            background-image: url('IMG_2005.jpg'); background-size: cover; background-position: center;
+            color: white; border: none; position: relative; overflow: hidden;
+        }
+        .star-guardian-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); z-index: 0; }
+        .star-guardian-content { position: relative; z-index: 1; }
+        .star-guardian-card h2 { color: #FFD700; border-color: rgba(255, 255, 255, 0.3); }
+
+        /* --- LIST STYLES --- */
+        .guardian-list { list-style: none; text-align: left; padding: 0 5px; }
+        .guardian-item {
+            display: flex; align-items: center; padding: 10px; margin-bottom: 8px;
+            background-color: rgba(255, 255, 255, 0.15); border-radius: 10px; backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2); color: white; transition: transform 0.2s;
+        }
+        .guardian-item:hover { transform: scale(1.02); background-color: rgba(255, 255, 255, 0.25); }
+        .rank-num { font-weight: 900; font-size: 1.2rem; width: 40px; text-align: center; margin-right: 15px; font-style: italic; }
+        .top-1 { background: linear-gradient(90deg, rgba(255, 215, 0, 0.3), rgba(255, 255, 255, 0.1)); border: 2px solid var(--gold); }
+        .top-1 .rank-num { color: #FFD700; }
+        .top-2 { border: 2px solid var(--silver); } .top-2 .rank-num { color: #E0E0E0; }
+        .top-3 { border: 2px solid var(--bronze); } .top-3 .rank-num { color: #CD7F32; }
+
+        /* --- GAME & ID --- */
+        .feed-btn {
+            background: var(--crispy-orange); color: white; border: none; padding: 15px 40px;
+            font-size: 1.2rem; border-radius: 50px; cursor: pointer; box-shadow: 0 6px 0 #E65100;
+            margin: 10px auto; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .feed-btn:active { box-shadow: 0 0 0 #E65100; transform: translateY(6px); }
+        .feed-counter { font-size: 1.2rem; font-weight: bold; color: var(--crispy-orange); margin-top: 10px; }
+
+        .id-box {
+            background-color: var(--text-dark); color: var(--potato-yellow); padding: 15px; border-radius: 12px;
+            font-family: 'Courier New', monospace; font-size: 1.4rem; font-weight: bold; margin: 15px 0; cursor: pointer;
+        }
+        .vtuber-model { width: 100%; border-radius: 15px; margin-top: 10px; border: 3px solid var(--potato-yellow); pointer-events: none; }
+        .id-label { font-size: 0.8rem; color: #aaa; display: block; margin-bottom: 5px; font-family: sans-serif; }
+
+        footer { text-align: center; font-size: 0.8rem; color: #aaa; margin-top: 40px; }
+
+        /* --- VIDEO PLAYER --- */
+        #card-video {
+            padding: 0 !important;
+            overflow: hidden;
+            background: black;
+        }
+        #card-video h2 {
+            margin: 0;
+            padding: 15px;
+            background: white;
+            color: var(--text-dark);
+            position: relative;
+            z-index: 10;
+            border-bottom: 1px solid #eee;
+        }
+        .custom-video {
+            width: 100%;
+            display: block;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="background-container"></div>
+
+    <header>
+        <a href="https://v.douyin.com/4xV4HCuilcQ/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+            <div class="icon-container">
+                <img src="IMG_2004.jpg" alt="Hamster Icon">
+            </div>
+        </a>
+        <h1>脆薯 (Cuì Shǔ)</h1>
+        <div class="tagline">"计数主播" 菜薯</div>
+    </header>
+
+    <div class="container">
+
+        <!-- LIVE STATUS CARD -->
+        <div class="card" id="card-status">
+            <h2>⏰ Stream Schedule</h2>
+            <div id="status-badge" class="status-badge status-offline">OFFLINE 😴</div>
+            <div id="timer-text">Next Stream in:</div>
+            <div id="countdown" class="time-display">Loading...</div>
+            <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Daily: 21:00 - 00:00 (Midnight)</p>
+        </div>
+
+        <!-- VIDEO CARD (Randomly Picks 1 or 2) -->
+        <div class="card" id="card-video">
+            <h2>📺 Video</h2>
+            <video class="custom-video" controls autoplay loop muted playsinline>
+                <!-- Source will be set by JS below -->
+                <source id="video-source" src="" type="video/mp4">
+            </video>
+        </div>
+
+        <!-- ID Card -->
+        <div class="card" id="card-1">
+            <h2>Find Her on Douyin</h2>
+            <div class="id-box" onclick="copyID()">
+                <span class="id-label">Tap to Copy ID</span>
+                94582611501
+            </div>
+        </div>
+
+        <!-- PERSISTENT FEED GAME -->
+        <div class="card" id="card-game">
+            <h2>🍔 给她吃！！！！！</h2>
+            <p>她喜欢麦当劳的薯饼。</p>
+            <button class="feed-btn" onclick="feedHamster()">
+                <span>🥔</span> 塞她嘴里！
+            </button>
+            <div class="feed-counter">薯饼已吃: <span id="count">...</span></div>
+        </div>
+
+        <!-- STAR GUARDIANS -->
+        <div class="card star-guardian-card" id="card-guardian">
+            <div class="star-guardian-content">
+                <h2>🌟 星守护 (Star Guardians)</h2>
+                <p style="margin-bottom: 20px; font-size: 0.9rem; opacity: 0.9;">
+                    菜家军👻
+                </p>
+                <ul class="guardian-list">
+                    <li class="guardian-item top-1"><span class="rank-num">1</span> <span class="user-name">Allahu akber</span></li>
+                    <li class="guardian-item top-2"><span class="rank-num">2</span> <span class="user-name">狐狸摸鱼🦊</span></li>
+                    <li class="guardian-item top-3"><span class="rank-num">3</span> <span class="user-name">懒得取名字🐹</span></li>
+                    <li class="guardian-item"><span class="rank-num">4</span> <span class="user-name">于笙</span></li>
+                    <li class="guardian-item"><span class="rank-num">5</span> <span class="user-name">•· (点点)</span></li>
+                    <li class="guardian-item"><span class="rank-num">6</span> <span class="user-name">虾仁不眨眼:)</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Avatar -->
+        <div class="card" id="card-avatar">
+            <h2>桌宠</h2>
+            <img src="IMG_2003.jpg" alt="Vtuber Model" class="vtuber-model">
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Unofficial Fan Page | Made by a proud 脆薯饼</p>
+    </footer>
+
+    <script>
+        // --- 0. RANDOM VIDEO LOGIC ---
+        // Automatically picks video1.mp4 or video2.mp4
+        const videoElement = document.querySelector('.custom-video');
+        const sourceElement = document.getElementById('video-source');
+        
+        // Random number: 1 or 2
+        const randomNum = Math.floor(Math.random() * 2) + 1; 
+        const videoFile = `video${randomNum}.mp4`;
+        
+        sourceElement.src = videoFile;
+        videoElement.load(); // Force reload with new source
+
+        // --- CONFIGURATION ---
+        const STORE_ID = "675e0f7e91147570494025f1"; 
+        const KEY_NAME = "cuishu_global_sync_v4";
+        const API_URL = `https://kvstore.io/v1/k/${STORE_ID}/${KEY_NAME}`;
+        const LOCAL_KEY = "cuishu_local_total";
+        
+        let localCount = parseInt(localStorage.getItem(LOCAL_KEY)) || 0;
+        let syncTimeout = null;
+
+        // --- 1. INITIAL LOAD & SYNC ---
+        async function loadCount() {
+            try {
+                let response = await fetch(API_URL);
+                if (response.ok) {
+                    let text = await response.text();
+                    let serverCount = parseInt(text) || 0;
+                    if (serverCount > localCount) {
+                        localCount = serverCount;
+                        localStorage.setItem(LOCAL_KEY, localCount);
+                    }
+                }
+            } catch (e) { console.log("Offline"); }
+            document.getElementById('count').innerText = localCount;
+        }
+        loadCount();
+        setInterval(loadCount, 5000);
+
+        // --- 2. CLICK LOGIC ---
+        function feedHamster() {
+            localCount++;
+            localStorage.setItem(LOCAL_KEY, localCount);
+            document.getElementById('count').innerText = localCount;
+
+            confetti({ particleCount: 50, spread: 70, origin: { y: 0.6 }, colors: ['#FFD54F', '#FF8F00', '#FFFFFF'] });
+
+            const btn = document.querySelector('.feed-btn');
+            const floatText = document.createElement('div');
+            floatText.innerText = "+1 🥔";
+            floatText.style.position = 'absolute';
+            floatText.style.color = '#E65100'; floatText.style.fontWeight = 'bold';
+            floatText.style.left = (btn.getBoundingClientRect().left + 50) + 'px';
+            floatText.style.top = (btn.getBoundingClientRect().top) + 'px';
+            floatText.style.transition = 'all 1s ease-out'; floatText.style.pointerEvents = 'none';
+            document.body.appendChild(floatText);
+            setTimeout(() => { floatText.style.transform = 'translateY(-50px)'; floatText.style.opacity = '0'; }, 50);
+            setTimeout(() => { floatText.remove(); }, 1000);
+
+            clearTimeout(syncTimeout);
+            syncTimeout = setTimeout(() => { sendToServer(localCount); }, 1000);
+        }
+
+        async function sendToServer(value) {
+            try {
+                await fetch(API_URL, { method: 'POST', body: value.toString(), headers: { 'Content-Type': 'text/plain' } });
+            } catch (error) {}
+        }
+
+        // --- 3. SCHEDULE LOGIC ---
+        function updateStatus() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const badge = document.getElementById('status-badge');
+            const timerText = document.getElementById('timer-text');
+            const countdown = document.getElementById('countdown');
+
+            if (currentHour >= 21) {
+                badge.className = "status-badge status-live";
+                badge.innerText = "直播中! 🔴";
+                timerText.innerText = "正在直播!";
+                countdown.innerText = "直到午夜 🌙";
+            } else {
+                badge.className = "status-badge status-offline";
+                badge.innerText = "休息中 😴";
+                timerText.innerText = "下次直播:";
+                let target = new Date();
+                target.setHours(21, 0, 0, 0);
+                const diff = target - now;
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                countdown.innerText = `${hours}小时 ${minutes}分 ${seconds}秒`;
+            }
+        }
+        setInterval(updateStatus, 1000);
+        updateStatus();
+
+        // --- 4. FALLING ITEMS ---
+        function createFallingItem() {
+            const container = document.getElementById('background-container');
+            const item = document.createElement('div');
+            item.classList.add('falling-item');
+            const items = ['🥔', '🍟', '🐹', '✨'];
+            item.innerText = items[Math.floor(Math.random() * items.length)];
+            item.style.left = Math.random() * 100 + 'vw';
+            const duration = Math.random() * 3 + 3;
+            item.style.animationDuration = duration + 's';
+            item.style.fontSize = (Math.random() * 20 + 20) + 'px';
+            container.appendChild(item);
+            setTimeout(() => { item.remove(); }, duration * 1000);
+        }
+        setInterval(createFallingItem, 300);
+
+        // --- 5. COPY ID ---
+        function copyID() {
+            navigator.clipboard.writeText("94582611501");
+            alert("抖音号已复制! 🐹");
+        }
+    </script>
+
+</body>
+</html>
