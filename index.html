@@ -96,7 +96,18 @@
         }
         .status-offline { background-color: #EEE; color: #777; border: 2px solid #CCC; }
         .status-live { background-color: var(--live-red); color: white; border: 2px solid #D50000; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 23, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0); } }
+        
+        /* LIVE BUTTON STYLE */
+        .live-btn {
+            display: inline-block; padding: 15px 30px; border-radius: 50px;
+            font-weight: bold; font-size: 1.3rem; margin-bottom: 15px;
+            background-color: var(--live-red); color: white; border: none;
+            box-shadow: 0 0 15px rgba(255, 23, 68, 0.6);
+            text-decoration: none; animation: pulse 1.5s infinite;
+            cursor: pointer;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
         .time-display { font-family: monospace; font-size: 1.2rem; color: var(--crispy-orange); font-weight: bold; margin-top: 5px; }
 
         /* --- STAR GUARDIAN --- */
@@ -185,9 +196,12 @@
         <!-- LIVE STATUS CARD -->
         <div class="card" id="card-status">
             <h2>⏰ Stream Schedule</h2>
-            <div id="status-badge" class="status-badge status-offline">OFFLINE 😴</div>
-            <div id="timer-text">Next Stream in:</div>
-            <div id="countdown" class="time-display">Loading...</div>
+            <!-- Content changes via JS -->
+            <div id="status-container">
+                <div class="status-badge status-offline">OFFLINE 😴</div>
+                <div id="timer-text">Next Stream in:</div>
+                <div class="time-display">Loading...</div>
+            </div>
             <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Daily: 21:00 - 00:00 (Midnight)</p>
         </div>
 
@@ -195,7 +209,6 @@
         <div class="card" id="card-video">
             <h2>📺 Video</h2>
             <video class="custom-video" controls autoplay loop muted playsinline>
-                <!-- Source will be set by JS below -->
                 <source id="video-source" src="" type="video/mp4">
             </video>
         </div>
@@ -251,7 +264,6 @@
 
     <script>
         // --- 0. RANDOM VIDEO LOGIC ---
-        // Automatically picks video1.mp4 or video2.mp4
         const videoElement = document.querySelector('.custom-video');
         const sourceElement = document.getElementById('video-source');
         
@@ -260,13 +272,14 @@
         const videoFile = `video${randomNum}.mp4`;
         
         sourceElement.src = videoFile;
-        videoElement.load(); // Force reload with new source
+        videoElement.load(); 
 
         // --- CONFIGURATION ---
         const STORE_ID = "675e0f7e91147570494025f1"; 
         const KEY_NAME = "cuishu_global_sync_v4";
         const API_URL = `https://kvstore.io/v1/k/${STORE_ID}/${KEY_NAME}`;
         const LOCAL_KEY = "cuishu_local_total";
+        const DOUYIN_LINK = "https://v.douyin.com/4xV4HCuilcQ/"; // Your link here
         
         let localCount = parseInt(localStorage.getItem(LOCAL_KEY)) || 0;
         let syncTimeout = null;
@@ -319,30 +332,34 @@
             } catch (error) {}
         }
 
-        // --- 3. SCHEDULE LOGIC ---
+        // --- 3. SCHEDULE LOGIC WITH LIVE BUTTON ---
         function updateStatus() {
             const now = new Date();
             const currentHour = now.getHours();
-            const badge = document.getElementById('status-badge');
-            const timerText = document.getElementById('timer-text');
-            const countdown = document.getElementById('countdown');
+            const container = document.getElementById('status-container');
 
             if (currentHour >= 21) {
-                badge.className = "status-badge status-live";
-                badge.innerText = "直播中! 🔴";
-                timerText.innerText = "正在直播!";
-                countdown.innerText = "直到午夜 🌙";
+                // LIVE MODE: Show Button
+                container.innerHTML = `
+                    <a href="${DOUYIN_LINK}" target="_blank" class="live-btn">
+                        🔴 WATCH LIVE NOW
+                    </a>
+                    <div style="color: #FF1744; font-weight: bold;">正在直播! Click to Join!</div>
+                `;
             } else {
-                badge.className = "status-badge status-offline";
-                badge.innerText = "休息中 😴";
-                timerText.innerText = "下次直播:";
+                // OFFLINE MODE: Show Timer
                 let target = new Date();
                 target.setHours(21, 0, 0, 0);
                 const diff = target - now;
                 const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                countdown.innerText = `${hours}小时 ${minutes}分 ${seconds}秒`;
+
+                container.innerHTML = `
+                    <div class="status-badge status-offline">OFFLINE 😴</div>
+                    <div id="timer-text">Next Stream in:</div>
+                    <div class="time-display">${hours}h ${minutes}m ${seconds}s</div>
+                `;
             }
         }
         setInterval(updateStatus, 1000);
