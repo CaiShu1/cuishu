@@ -175,7 +175,6 @@
         .custom-video {
             width: 100%;
             display: block;
-            /* Remove bottom radius since card clips it */
             border-bottom-left-radius: 20px; 
             border-bottom-right-radius: 20px;
         }
@@ -209,11 +208,12 @@
             <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Daily: 21:00 - 00:00 (Midnight)</p>
         </div>
 
-        <!-- VIDEO CARD (Narrow for Phone Shape) -->
+        <!-- VIDEO CARD (Single Video Mode) -->
         <div class="card" id="card-video">
-            <h2>📺 Video</h2>
+            <h2>📺 Latest Video</h2>
             <video class="custom-video" controls autoplay loop muted playsinline>
-                <source id="video-source" src="" type="video/mp4">
+                <!-- FIXED to only play video1.mp4 -->
+                <source src="video1.mp4" type="video/mp4">
             </video>
         </div>
 
@@ -267,17 +267,6 @@
     </footer>
 
     <script>
-        // --- 0. RANDOM VIDEO LOGIC ---
-        const videoElement = document.querySelector('.custom-video');
-        const sourceElement = document.getElementById('video-source');
-        
-        // Random number: 1 or 2
-        const randomNum = Math.floor(Math.random() * 2) + 1; 
-        const videoFile = `video${randomNum}.mp4`;
-        
-        sourceElement.src = videoFile;
-        videoElement.load(); 
-
         // --- CONFIGURATION ---
         const STORE_ID = "675e0f7e91147570494025f1"; 
         const KEY_NAME = "cuishu_global_sync_v4";
