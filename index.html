@@ -142,6 +142,28 @@
         .id-label { font-size: 0.8rem; color: #aaa; display: block; margin-bottom: 5px; font-family: sans-serif; }
 
         footer { text-align: center; font-size: 0.8rem; color: #aaa; margin-top: 40px; }
+
+        /* --- VIDEO PLAYER --- */
+        #card-video {
+            padding: 0 !important;
+            overflow: hidden;
+            background: black;
+        }
+        #card-video h2 {
+            margin: 0;
+            padding: 15px;
+            background: white;
+            color: var(--text-dark);
+            position: relative;
+            z-index: 10;
+            border-bottom: 1px solid #eee;
+        }
+        .custom-video {
+            width: 100%;
+            display: block;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
     </style>
 </head>
 <body>
@@ -149,14 +171,14 @@
     <div id="background-container"></div>
 
     <header>
-    <a href="https://v.douyin.com/4xV4HCuilcQ/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
-        <div class="icon-container">
-            <img src="IMG_2004.jpg" alt="Hamster Icon">
-        </div>
-    </a>
-    <h1>脆薯 (Cuì Shǔ)</h1>
-    <div class="tagline">"计数主播" 菜薯</div>
-</header>
+        <a href="https://v.douyin.com/4xV4HCuilcQ/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+            <div class="icon-container">
+                <img src="IMG_2004.jpg" alt="Hamster Icon">
+            </div>
+        </a>
+        <h1>脆薯 (Cuì Shǔ)</h1>
+        <div class="tagline">"计数主播" 菜薯</div>
+    </header>
 
     <div class="container">
 
@@ -167,6 +189,15 @@
             <div id="timer-text">Next Stream in:</div>
             <div id="countdown" class="time-display">Loading...</div>
             <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Daily: 21:00 - 00:00 (Midnight)</p>
+        </div>
+
+        <!-- VIDEO CARD (Randomly Picks 1 or 2) -->
+        <div class="card" id="card-video">
+            <h2>📺 Video</h2>
+            <video class="custom-video" controls autoplay loop muted playsinline>
+                <!-- Source will be set by JS below -->
+                <source id="video-source" src="" type="video/mp4">
+            </video>
         </div>
 
         <!-- ID Card -->
@@ -219,14 +250,24 @@
     </footer>
 
     <script>
-        // --- API CONFIGURATION (kvstore.io with Debounce) ---
-        // We use kvstore because it allows SETTING the value (overwriting).
-        // This fixes the "PC is at 111, Server is at 95" problem.
-        const STORE_ID = "675e0f7e91147570494025f1"; 
-        const KEY_NAME = "cuishu_global_sync_v4"; // New key to force sync
-        const API_URL = `https://kvstore.io/v1/k/${STORE_ID}/${KEY_NAME}`;
+        // --- 0. RANDOM VIDEO LOGIC ---
+        // Automatically picks video1.mp4 or video2.mp4
+        const videoElement = document.querySelector('.custom-video');
+        const sourceElement = document.getElementById('video-source');
         
+        // Random number: 1 or 2
+        const randomNum = Math.floor(Math.random() * 2) + 1; 
+        const videoFile = `video${randomNum}.mp4`;
+        
+        sourceElement.src = videoFile;
+        videoElement.load(); // Force reload with new source
+
+        // --- CONFIGURATION ---
+        const STORE_ID = "675e0f7e91147570494025f1"; 
+        const KEY_NAME = "cuishu_global_sync_v4";
+        const API_URL = `https://kvstore.io/v1/k/${STORE_ID}/${KEY_NAME}`;
         const LOCAL_KEY = "cuishu_local_total";
+        
         let localCount = parseInt(localStorage.getItem(LOCAL_KEY)) || 0;
         let syncTimeout = null;
 
@@ -237,37 +278,24 @@
                 if (response.ok) {
                     let text = await response.text();
                     let serverCount = parseInt(text) || 0;
-                    
-                    // Logic: Always take the higher number
                     if (serverCount > localCount) {
                         localCount = serverCount;
                         localStorage.setItem(LOCAL_KEY, localCount);
                     }
                 }
-            } catch (e) {
-                console.log("Offline or blocked, keeping local count");
-            }
+            } catch (e) { console.log("Offline"); }
             document.getElementById('count').innerText = localCount;
         }
         loadCount();
-        
-        // Poll server every 5 seconds to get updates from other people
         setInterval(loadCount, 5000);
 
         // --- 2. CLICK LOGIC ---
         function feedHamster() {
-            // A. Update Local Immediately (No Lag)
             localCount++;
             localStorage.setItem(LOCAL_KEY, localCount);
             document.getElementById('count').innerText = localCount;
 
-            // B. Visuals
-            confetti({
-                particleCount: 50,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: ['#FFD54F', '#FF8F00', '#FFFFFF']
-            });
+            confetti({ particleCount: 50, spread: 70, origin: { y: 0.6 }, colors: ['#FFD54F', '#FF8F00', '#FFFFFF'] });
 
             const btn = document.querySelector('.feed-btn');
             const floatText = document.createElement('div');
@@ -281,26 +309,14 @@
             setTimeout(() => { floatText.style.transform = 'translateY(-50px)'; floatText.style.opacity = '0'; }, 50);
             setTimeout(() => { floatText.remove(); }, 1000);
 
-            // C. DEBOUNCED SERVER SYNC
-            // Instead of sending every click, wait 1 second after last click
-            // Then send the TOTAL number. This overwrites the server.
             clearTimeout(syncTimeout);
-            syncTimeout = setTimeout(() => {
-                sendToServer(localCount);
-            }, 1000);
+            syncTimeout = setTimeout(() => { sendToServer(localCount); }, 1000);
         }
 
         async function sendToServer(value) {
             try {
-                // We POST the raw number. KVStore saves it.
-                await fetch(API_URL, {
-                    method: 'POST',
-                    body: value.toString(),
-                    headers: { 'Content-Type': 'text/plain' }
-                });
-            } catch (error) {
-                console.log("Background sync failed, will retry later");
-            }
+                await fetch(API_URL, { method: 'POST', body: value.toString(), headers: { 'Content-Type': 'text/plain' } });
+            } catch (error) {}
         }
 
         // --- 3. SCHEDULE LOGIC ---
