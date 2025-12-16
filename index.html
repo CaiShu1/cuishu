@@ -159,7 +159,6 @@
             padding: 0 !important;
             overflow: hidden;
             background: black;
-            /* Constraint the width to look like a phone */
             max-width: 350px; 
             margin-left: auto; margin-right: auto;
         }
@@ -208,12 +207,11 @@
             <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Daily: 21:00 - 00:00 (Midnight)</p>
         </div>
 
-        <!-- VIDEO CARD (Single Video Mode) -->
+        <!-- VIDEO CARD (Path fix) -->
         <div class="card" id="card-video">
             <h2>📺 Latest Video</h2>
             <video class="custom-video" controls autoplay loop muted playsinline>
-                <!-- FIXED to only play video1.mp4 -->
-                <source src="video1.mp4" type="video/mp4">
+                <source src="./video1.mp4" type="video/mp4">
             </video>
         </div>
 
