@@ -154,11 +154,14 @@
 
         footer { text-align: center; font-size: 0.8rem; color: #aaa; margin-top: 40px; }
 
-        /* --- VIDEO PLAYER --- */
+        /* --- PHONE-SHAPED VIDEO CARD --- */
         #card-video {
             padding: 0 !important;
             overflow: hidden;
             background: black;
+            /* Constraint the width to look like a phone */
+            max-width: 350px; 
+            margin-left: auto; margin-right: auto;
         }
         #card-video h2 {
             margin: 0;
@@ -172,7 +175,8 @@
         .custom-video {
             width: 100%;
             display: block;
-            border-bottom-left-radius: 20px;
+            /* Remove bottom radius since card clips it */
+            border-bottom-left-radius: 20px; 
             border-bottom-right-radius: 20px;
         }
     </style>
@@ -205,7 +209,7 @@
             <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Daily: 21:00 - 00:00 (Midnight)</p>
         </div>
 
-        <!-- VIDEO CARD (Randomly Picks 1 or 2) -->
+        <!-- VIDEO CARD (Narrow for Phone Shape) -->
         <div class="card" id="card-video">
             <h2>📺 Video</h2>
             <video class="custom-video" controls autoplay loop muted playsinline>
