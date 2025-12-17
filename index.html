@@ -149,7 +149,21 @@
             background-color: var(--text-dark); color: var(--potato-yellow); padding: 15px; border-radius: 12px;
             font-family: 'Courier New', monospace; font-size: 1.4rem; font-weight: bold; margin: 15px 0; cursor: pointer;
         }
-        .vtuber-model { width: 100%; border-radius: 15px; margin-top: 10px; border: 3px solid var(--potato-yellow); pointer-events: none; }
+        
+        /* --- VTUBER PNG BACKGROUND STYLES --- */
+        .vtuber-model { 
+            width: 100%; 
+            border-radius: 15px; 
+            margin-top: 10px; 
+            border: 4px solid var(--potato-yellow); 
+            
+            /* Default Background: Warm Potato Yellow Gradient */
+            background: radial-gradient(circle at center, #FFFDE7 20%, #FFF59D 100%);
+            
+            transition: all 0.5s ease;
+            pointer-events: none; 
+        }
+        
         .id-label { font-size: 0.8rem; color: #aaa; display: block; margin-bottom: 5px; font-family: sans-serif; }
 
         footer { text-align: center; font-size: 0.8rem; color: #aaa; margin-top: 40px; }
@@ -207,11 +221,11 @@
             <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Daily: 21:00 - 00:00 (Midnight)</p>
         </div>
 
-        <!-- VIDEO CARD (Path fix) -->
+        <!-- VIDEO CARD -->
         <div class="card" id="card-video">
             <h2>📺 Latest Video</h2>
             <video class="custom-video" controls autoplay loop muted playsinline>
-                <!-- CHANGE THIS LINE TO MATCH THE FILE EXACTLY -->
+                <!-- Keep uppercase MP4 as per your fix -->
                 <source src="./video1.MP4" type="video/mp4">
             </video>
         </div>
@@ -253,10 +267,11 @@
             </div>
         </div>
 
-        <!-- Avatar -->
+        <!-- Avatar (Auto Swaps on Xmas 24-26) -->
         <div class="card" id="card-avatar">
-            <h2>桌宠</h2>
-            <img src="IMG_2003.jpg" alt="Vtuber Model" class="vtuber-model">
+            <h2 id="avatar-title">桌宠</h2>
+            <!-- Note: Loading PNG now! -->
+            <img src="IMG_2003.png" alt="Vtuber Model" class="vtuber-model">
         </div>
 
     </div>
@@ -271,7 +286,7 @@
         const KEY_NAME = "cuishu_global_sync_v4";
         const API_URL = `https://kvstore.io/v1/k/${STORE_ID}/${KEY_NAME}`;
         const LOCAL_KEY = "cuishu_local_total";
-        const DOUYIN_LINK = "https://v.douyin.com/4xV4HCuilcQ/"; // Your link here
+        const DOUYIN_LINK = "https://v.douyin.com/4xV4HCuilcQ/"; 
         
         let localCount = parseInt(localStorage.getItem(LOCAL_KEY)) || 0;
         let syncTimeout = null;
@@ -324,14 +339,13 @@
             } catch (error) {}
         }
 
-        // --- 3. SCHEDULE LOGIC WITH LIVE BUTTON ---
+        // --- 3. SCHEDULE LOGIC ---
         function updateStatus() {
             const now = new Date();
             const currentHour = now.getHours();
             const container = document.getElementById('status-container');
 
             if (currentHour >= 21) {
-                // LIVE MODE: Show Button
                 container.innerHTML = `
                     <a href="${DOUYIN_LINK}" target="_blank" class="live-btn">
                         🔴 WATCH LIVE NOW
@@ -339,7 +353,6 @@
                     <div style="color: #FF1744; font-weight: bold;">正在直播! Click to Join!</div>
                 `;
             } else {
-                // OFFLINE MODE: Show Timer
                 let target = new Date();
                 target.setHours(21, 0, 0, 0);
                 const diff = target - now;
@@ -378,6 +391,38 @@
             navigator.clipboard.writeText("94582611501");
             alert("抖音号已复制! 🐹");
         }
+
+        // --- 6. AUTOMATIC CHRISTMAS SWITCHER (Dec 24-26 Only) ---
+        function checkChristmas() {
+            const now = new Date();
+            const month = now.getMonth(); // 11 = December
+            const day = now.getDate();    // 1-31
+
+            // LOGIC: Month must be December (11) AND Day must be 24, 25, or 26
+            const isChristmas = (month === 11) && (day >= 24 && day <= 26);
+
+            if (isChristmas) {
+                // IT IS CHRISTMAS! 🎄
+                const avatar = document.querySelector('.vtuber-model');
+                const title = document.getElementById('avatar-title');
+                
+                avatar.src = 'IMG_2016.png'; // Festive Image (PNG)
+                
+                // Festive Background: Red/White glow for the PNG
+                avatar.style.borderColor = '#2E7D32'; 
+                avatar.style.background = 'radial-gradient(circle, #FFEBEE 20%, #FFCDD2 100%)';
+                
+                title.innerText = '🎄 Merry Christmas! 🎅';
+                title.style.color = '#FF1744';
+            } else {
+                // NORMAL DAY (Revert)
+                const avatar = document.querySelector('.vtuber-model');
+                avatar.src = 'IMG_2003.png'; // Normal Image (PNG)
+                // Default Background will handle itself via CSS
+            }
+        }
+        checkChristmas();
+
     </script>
 
 </body>
