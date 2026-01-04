@@ -76,7 +76,23 @@
         .icon-container img { width: 100%; height: 100%; object-fit: cover; }
 
         h1 { font-size: 2.2rem; color: var(--crispy-orange); margin-bottom: 5px; text-shadow: 2px 2px 0px var(--white); }
-        .tagline { font-size: 1rem; color: #888; font-weight: 500; margin-bottom: 20px; }
+        
+        /* Updated Tagline Style */
+        .tagline { 
+            font-size: 1rem; color: #888; font-weight: 500; margin-bottom: 20px; 
+            display: flex; flex-direction: column; gap: 5px;
+        }
+        .quote {
+            color: var(--text-dark);
+            font-weight: bold;
+            font-style: italic;
+            font-size: 1.1rem;
+            animation: fadeIn 2s ease-in-out infinite alternate;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
 
         /* --- CONTAINER --- */
         .container { max-width: 600px; margin: 0 auto; padding: 0 20px; }
@@ -202,7 +218,12 @@
             </div>
         </a>
         <h1>脆薯 (Cuì Shǔ)</h1>
-        <div class="tagline">"计数主播" 菜薯</div>
+        
+        <!-- TAGLINE UPDATED WITH QUOTE -->
+        <div class="tagline">
+            <span>"计数主播" 菜薯</span>
+            <span class="quote">“脑子是干嘛用的？” 🧠</span>
+        </div>
     </header>
 
     <div class="container">

@@ -76,7 +76,23 @@
         .icon-container img { width: 100%; height: 100%; object-fit: cover; }
 
         h1 { font-size: 2.2rem; color: var(--crispy-orange); margin-bottom: 5px; text-shadow: 2px 2px 0px var(--white); }
-        .tagline { font-size: 1rem; color: #888; font-weight: 500; margin-bottom: 20px; }
+        
+        /* Updated Tagline Style */
+        .tagline { 
+            font-size: 1rem; color: #888; font-weight: 500; margin-bottom: 20px; 
+            display: flex; flex-direction: column; gap: 5px;
+        }
+        .quote {
+            color: var(--text-dark);
+            font-weight: bold;
+            font-style: italic;
+            font-size: 1.1rem;
+            animation: fadeIn 2s ease-in-out infinite alternate;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
 
         /* --- CONTAINER --- */
         .container { max-width: 600px; margin: 0 auto; padding: 0 20px; }
@@ -96,7 +112,18 @@
         }
         .status-offline { background-color: #EEE; color: #777; border: 2px solid #CCC; }
         .status-live { background-color: var(--live-red); color: white; border: 2px solid #D50000; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 23, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0); } }
+        
+        /* LIVE BUTTON STYLE */
+        .live-btn {
+            display: inline-block; padding: 15px 30px; border-radius: 50px;
+            font-weight: bold; font-size: 1.3rem; margin-bottom: 15px;
+            background-color: var(--live-red); color: white; border: none;
+            box-shadow: 0 0 15px rgba(255, 23, 68, 0.6);
+            text-decoration: none; animation: pulse 1.5s infinite;
+            cursor: pointer;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
         .time-display { font-family: monospace; font-size: 1.2rem; color: var(--crispy-orange); font-weight: bold; margin-top: 5px; }
 
         /* --- STAR GUARDIAN --- */
@@ -138,16 +165,29 @@
             background-color: var(--text-dark); color: var(--potato-yellow); padding: 15px; border-radius: 12px;
             font-family: 'Courier New', monospace; font-size: 1.4rem; font-weight: bold; margin: 15px 0; cursor: pointer;
         }
-        .vtuber-model { width: 100%; border-radius: 15px; margin-top: 10px; border: 3px solid var(--potato-yellow); pointer-events: none; }
+        
+        /* --- VTUBER PNG BACKGROUND STYLES --- */
+        .vtuber-model { 
+            width: 100%; 
+            border-radius: 15px; 
+            margin-top: 10px; 
+            border: 4px solid var(--potato-yellow); 
+            background: radial-gradient(circle at center, #FFFDE7 20%, #FFF59D 100%);
+            transition: all 0.5s ease;
+            pointer-events: none; 
+        }
+        
         .id-label { font-size: 0.8rem; color: #aaa; display: block; margin-bottom: 5px; font-family: sans-serif; }
 
         footer { text-align: center; font-size: 0.8rem; color: #aaa; margin-top: 40px; }
 
-        /* --- VIDEO PLAYER --- */
+        /* --- PHONE-SHAPED VIDEO CARD --- */
         #card-video {
             padding: 0 !important;
             overflow: hidden;
             background: black;
+            max-width: 350px; 
+            margin-left: auto; margin-right: auto;
         }
         #card-video h2 {
             margin: 0;
@@ -161,7 +201,7 @@
         .custom-video {
             width: 100%;
             display: block;
-            border-bottom-left-radius: 20px;
+            border-bottom-left-radius: 20px; 
             border-bottom-right-radius: 20px;
         }
     </style>
@@ -173,11 +213,17 @@
     <header>
         <a href="https://v.douyin.com/4xV4HCuilcQ/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
             <div class="icon-container">
-                <img src="IMG_2004.jpg" alt="Hamster Icon">
+                <!-- ID Added Here so JavaScript can find it -->
+                <img id="header-icon" src="IMG_2004.jpg" alt="Hamster Icon">
             </div>
         </a>
         <h1>脆薯 (Cuì Shǔ)</h1>
-        <div class="tagline">"计数主播" 菜薯</div>
+        
+        <!-- TAGLINE UPDATED WITH QUOTE -->
+        <div class="tagline">
+            <span>"计数主播" 菜薯</span>
+            <span class="quote">“脑子是干嘛用的？” 🧠</span>
+        </div>
     </header>
 
     <div class="container">
@@ -185,18 +231,20 @@
         <!-- LIVE STATUS CARD -->
         <div class="card" id="card-status">
             <h2>⏰ Stream Schedule</h2>
-            <div id="status-badge" class="status-badge status-offline">OFFLINE 😴</div>
-            <div id="timer-text">Next Stream in:</div>
-            <div id="countdown" class="time-display">Loading...</div>
+            <!-- Content changes via JS -->
+            <div id="status-container">
+                <div class="status-badge status-offline">OFFLINE 😴</div>
+                <div id="timer-text">Next Stream in:</div>
+                <div class="time-display">Loading...</div>
+            </div>
             <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Daily: 21:00 - 00:00 (Midnight)</p>
         </div>
 
-        <!-- VIDEO CARD (Randomly Picks 1 or 2) -->
+        <!-- VIDEO CARD -->
         <div class="card" id="card-video">
-            <h2>📺 Video</h2>
+            <h2>📺 Latest Video</h2>
             <video class="custom-video" controls autoplay loop muted playsinline>
-                <!-- Source will be set by JS below -->
-                <source id="video-source" src="" type="video/mp4">
+                <source src="./video1.MP4" type="video/mp4">
             </video>
         </div>
 
@@ -237,10 +285,10 @@
             </div>
         </div>
 
-        <!-- Avatar -->
+        <!-- Avatar (Changes on Xmas 24-26) -->
         <div class="card" id="card-avatar">
-            <h2>桌宠</h2>
-            <img src="IMG_2003.jpg" alt="Vtuber Model" class="vtuber-model">
+            <h2 id="avatar-title">桌宠</h2>
+            <img src="IMG_2003.png" alt="Vtuber Model" class="vtuber-model">
         </div>
 
     </div>
@@ -250,23 +298,12 @@
     </footer>
 
     <script>
-        // --- 0. RANDOM VIDEO LOGIC ---
-        // Automatically picks video1.mp4 or video2.mp4
-        const videoElement = document.querySelector('.custom-video');
-        const sourceElement = document.getElementById('video-source');
-        
-        // Random number: 1 or 2
-        const randomNum = Math.floor(Math.random() * 2) + 1; 
-        const videoFile = `video${randomNum}.mp4`;
-        
-        sourceElement.src = videoFile;
-        videoElement.load(); // Force reload with new source
-
         // --- CONFIGURATION ---
         const STORE_ID = "675e0f7e91147570494025f1"; 
         const KEY_NAME = "cuishu_global_sync_v4";
         const API_URL = `https://kvstore.io/v1/k/${STORE_ID}/${KEY_NAME}`;
         const LOCAL_KEY = "cuishu_local_total";
+        const DOUYIN_LINK = "https://v.douyin.com/4xV4HCuilcQ/"; 
         
         let localCount = parseInt(localStorage.getItem(LOCAL_KEY)) || 0;
         let syncTimeout = null;
@@ -323,26 +360,28 @@
         function updateStatus() {
             const now = new Date();
             const currentHour = now.getHours();
-            const badge = document.getElementById('status-badge');
-            const timerText = document.getElementById('timer-text');
-            const countdown = document.getElementById('countdown');
+            const container = document.getElementById('status-container');
 
             if (currentHour >= 21) {
-                badge.className = "status-badge status-live";
-                badge.innerText = "直播中! 🔴";
-                timerText.innerText = "正在直播!";
-                countdown.innerText = "直到午夜 🌙";
+                container.innerHTML = `
+                    <a href="${DOUYIN_LINK}" target="_blank" class="live-btn">
+                        🔴 WATCH LIVE NOW
+                    </a>
+                    <div style="color: #FF1744; font-weight: bold;">正在直播! Click to Join!</div>
+                `;
             } else {
-                badge.className = "status-badge status-offline";
-                badge.innerText = "休息中 😴";
-                timerText.innerText = "下次直播:";
                 let target = new Date();
                 target.setHours(21, 0, 0, 0);
                 const diff = target - now;
                 const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                countdown.innerText = `${hours}小时 ${minutes}分 ${seconds}秒`;
+
+                container.innerHTML = `
+                    <div class="status-badge status-offline">OFFLINE 😴</div>
+                    <div id="timer-text">Next Stream in:</div>
+                    <div class="time-display">${hours}h ${minutes}m ${seconds}s</div>
+                `;
             }
         }
         setInterval(updateStatus, 1000);
@@ -369,6 +408,43 @@
             navigator.clipboard.writeText("94582611501");
             alert("抖音号已复制! 🐹");
         }
+
+        // --- 6. AUTOMATIC CHRISTMAS SWITCHER (Dec 24-26 Only) ---
+        function checkChristmas() {
+            const now = new Date();
+            const month = now.getMonth(); // 11 = December
+            const day = now.getDate();    // 1-31
+
+            const isChristmas = (month === 11) && (day >= 24 && day <= 26);
+
+            const avatar = document.querySelector('.vtuber-model');
+            const headerIcon = document.getElementById('header-icon'); // The Top Icon
+            const title = document.getElementById('avatar-title');
+
+            if (isChristmas) {
+                // --- IT IS CHRISTMAS! 🎄 ---
+                
+                // 1. Swap Character
+                avatar.src = 'IMG_2016.png'; 
+                avatar.style.borderColor = '#2E7D32'; 
+                avatar.style.background = 'radial-gradient(circle, #FFEBEE 20%, #FFCDD2 100%)';
+                
+                // 2. Swap Top Icon (The Gun Hamster)
+                headerIcon.src = 'IMG_2022.jpg'; 
+                
+                // 3. Update Title
+                title.innerText = '🎄 Merry Christmas! 🎅';
+                title.style.color = '#FF1744';
+                
+            } else {
+                // --- NORMAL DAY ---
+                avatar.src = 'IMG_2003.png'; 
+                headerIcon.src = 'IMG_2004.jpg'; // Revert Icon
+                // Reset styles happens automatically or via reload
+            }
+        }
+        checkChristmas();
+
     </script>
 
 </body>
